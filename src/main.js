@@ -50,8 +50,10 @@ if (!reduce) {
     .from('.arch', { clipPath: 'inset(100% 0 0 0 round 999px 999px 28px 28px)', duration: 1.6, ease: 'expo.inOut' }, 0.1)
     .from('.arch video', { scale: 1.5, duration: 2.2 }, 0.1)
     .from('.seal', { scale: 0, rotate: -120, duration: 1.4, ease: 'back.out(1.6)' }, 0.9)
-  gsap.to('.hero-media', { yPercent: -12, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
-  gsap.to('.hero-copy', { yPercent: 10, opacity: 0.3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
+  gsap.matchMedia().add('(min-width: 901px)', () => {
+    gsap.to('.hero-media', { yPercent: -12, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
+    gsap.to('.hero-copy', { yPercent: 10, opacity: 0.3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
+  })
   // count up
   const c = $('[data-count]'); const o = { v: 0 }
   gsap.to(o, { v: 40, duration: 2, delay: 0.8, ease: 'power3.out', onUpdate: () => (c.textContent = Math.round(o.v)) })
@@ -68,7 +70,12 @@ if (matchMedia('(hover:hover)').matches && !reduce) {
 
 /* pour reveal */
 const steps = $$('.pour-steps li')
-const setStep = p => steps.forEach((s, i) => s.classList.toggle('is-on', p >= [0, 0.3, 0.7][i]))
+const TH = [0, 0.3, 0.7]
+const setStep = p => {
+  const cur = TH.filter(t => p >= t).length - 1
+  steps.forEach((s, i) => { s.classList.toggle('is-on', i <= cur); s.classList.toggle('is-cur', i === cur) })
+}
+setStep(0)
 const pourTl = () => {
   const tl = gsap.timeline({ defaults: { ease: 'none' } })
   tl.fromTo('.pf-after-wrap', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 1 }, 0)
@@ -83,7 +90,7 @@ mm.add('(min-width: 901px)', () => {
   ScrollTrigger.create({ trigger: '.pour', pin: '.pour-pin', start: 'top top', end: '+=160%', scrub: 0.6, animation: pourTl(), onUpdate: s => setStep(s.progress) })
 })
 mm.add('(max-width: 900px)', () => {
-  ScrollTrigger.create({ trigger: '.pour-frame', start: 'top 75%', end: 'bottom 35%', scrub: 0.6, animation: pourTl(), onUpdate: s => setStep(s.progress) })
+  ScrollTrigger.create({ trigger: '.pour', pin: '.pour-pin', start: 'top top', end: '+=130%', scrub: 0.6, anticipatePin: 1, animation: pourTl(), onUpdate: s => setStep(s.progress) })
 })
 
 /* services hover image */
@@ -104,6 +111,8 @@ tabs.forEach((t, i) => t.addEventListener('click', () => {
   fims.forEach((im, j) => im.classList.toggle('is-on', i === j))
   $('.fin-cap-n').textContent = String(i + 1).padStart(2, '0')
   $('.fin-cap-t').textContent = t.querySelector('span').textContent
+  $('.fin-desc').textContent = t.querySelector('small').textContent
+  if (t.parentElement.scrollWidth > t.parentElement.clientWidth) t.parentElement.scrollTo({ left: t.offsetLeft - 16, behavior: 'smooth' })
 }))
 
 /* gallery drag */
